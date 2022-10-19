@@ -1,28 +1,25 @@
 import sys
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
-from cell_painter import CellPainter
 from field import Field
-from simulation_view import SimulationView
+from ignore_that.lol import UIForm
 
 
-class GameOfLife(QMainWindow):
+class GameOfLife(QMainWindow, UIForm):
     FACTOR = 1.5
-    SIMULATION_WINDOW_SIZE = 500, 500
+    SIMULATION_WINDOW_SIZE = 600, 600
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Жизнь')
-        self.setFixedSize(520, 550)
 
         # Поле
-        self.field = Field(50, 50)
-        self.field_size_x, self.field_size_y = self.field.get_size()
+        self.field = ...
+        self.field_size_x, self.field_size_y = ..., ...
 
         # Переменные для рисования и работы симуляции
-        self.simulation_active = False
+        self.simulation_active = ...
         self.drag_start = None
         self.dragging_to_cell_state = None
 
@@ -31,8 +28,11 @@ class GameOfLife(QMainWindow):
         self._painter = ...
         self.loop_simulation_btn = ...
         self.step_simulation_btn = ...
+        self.reset_simulation_btn = ...
 
-        self.setup_ui()
+        self.setup_simulation()
+        self.setup_ui(self)
+        self.setup_ui_logic()
 
         w, h = self._painter.width(), self._painter.height()
         self.field_cell_size = min(w // self.field_size_x, h // self.field_size_y)
@@ -41,42 +41,31 @@ class GameOfLife(QMainWindow):
         self.simulation_timer.setInterval(100)
         self.simulation_timer.timeout.connect(self.update_field)
 
-    def setup_ui(self):
-        main_widget = QWidget(self)
-        main_widget.setLayout(QVBoxLayout())
+    def setup_ui_logic(self):
+        self.simulation_step_speed_setting_value_slider.valueChanged.connect(self.change_simulation_step_speed)
 
-        scene = QtWidgets.QGraphicsScene(self)
-        self._view = SimulationView(scene)
-
-        self._painter = CellPainter(self)
-        self._painter.setFixedSize(*self.SIMULATION_WINDOW_SIZE)
-
-        scene.addWidget(self._painter)
-        self._view.setFixedSize(self._view.sizeHint())
-        self._painter.setMouseTracking(True)
-
-        btns_holder = QWidget(self)
-        btns_holder.setLayout(QHBoxLayout())
-        btns_holder.layout().setContentsMargins(9, 9, 9, 0)
-
-        self.loop_simulation_btn = QPushButton('Play / Pause')
-        self.loop_simulation_btn.clicked.connect(self.loop_simulation)
-
-        self.step_simulation_btn = QPushButton('Step')
         self.step_simulation_btn.clicked.connect(self.update_field)
-
-        btns_holder.layout().addWidget(self.loop_simulation_btn)
-        btns_holder.layout().addWidget(self.step_simulation_btn)
-
-        main_widget.layout().addWidget(self._view)
-        main_widget.layout().addWidget(btns_holder)
-
-        self.setCentralWidget(main_widget)
+        self.loop_simulation_btn.clicked.connect(self.loop_simulation)
+        self.reset_simulation_btn.clicked.connect(self.reload_simulation)
 
         zoom_in_bind = QtWidgets.QShortcut(QtCore.Qt.Key_Equal, self._view)
         zoom_in_bind.activated.connect(self.simulation_zoom_in)
         zoom_out_bind = QtWidgets.QShortcut(QtCore.Qt.Key_Minus, self._view)
         zoom_out_bind.activated.connect(self.simulation_zoom_out)
+
+    def setup_simulation(self):
+        self.simulation_active = False
+
+        self.field = Field(60, 60)
+        self.field_size_x, self.field_size_y = self.field.get_size()
+
+    def reload_simulation(self):
+        if self.simulation_active:
+            self.simulation_timer.stop()
+            self.loop_simulation_btn.setText('Play')
+
+        self.setup_simulation()
+        self._painter.update()
 
     def mousePressEvent(self, event):
         # cursor_point = self.mapFromGlobal(self.cursor().pos())
@@ -112,8 +101,10 @@ class GameOfLife(QMainWindow):
     def loop_simulation(self):
         if self.simulation_active:
             self.simulation_timer.stop()
+            self.loop_simulation_btn.setText('Play')
         else:
             self.simulation_timer.start()
+            self.loop_simulation_btn.setText('Pause')
 
         self.simulation_active = not self.simulation_active
 
@@ -124,6 +115,11 @@ class GameOfLife(QMainWindow):
                                  int(cursor_point.y() / self.field_cell_size)
 
         return self.field.matrix[cell_pos_y][cell_pos_x]
+
+    def change_simulation_step_speed(self):
+        v = self.simulation_step_speed_setting_value_slider.value()
+        self.simulation_step_speed_setting_value_label.setText(str(v / 1000))
+        self.simulation_timer.setInterval(v)
 
     @QtCore.pyqtSlot()
     def update_field(self):
