@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from field import Field
-from ignore_that.lol import UIForm
+from ui.main_ui import UIForm
 
 
 class GameOfLife(QMainWindow, UIForm):
@@ -30,9 +30,17 @@ class GameOfLife(QMainWindow, UIForm):
         self.step_simulation_btn = ...
         self.reset_simulation_btn = ...
 
+        self.alive_cell_color = ...
+        self.dead_cell_color = ...
+        self.cell_border_color = ...
+
         self.setup_simulation()
         self.setup_ui(self)
         self.setup_ui_logic()
+
+        self.alive_cell_color = self.alive_cell_color_setting.value()
+        self.dead_cell_color = self.dead_cell_color_setting.value()
+        self.cell_border_color = self.cell_border_color_setting.value()
 
         w, h = self._painter.width(), self._painter.height()
         self.field_cell_size = min(w // self.field_size_x, h // self.field_size_y)
@@ -41,8 +49,12 @@ class GameOfLife(QMainWindow, UIForm):
         self.simulation_timer.setInterval(100)
         self.simulation_timer.timeout.connect(self.update_field)
 
+    # noinspection PyUnresolvedReferences
     def setup_ui_logic(self):
-        self.simulation_step_speed_setting_value_slider.valueChanged.connect(self.change_simulation_step_speed)
+        self.simulation_update_delay_setting.settingValueChanged.connect(self.change_simulation_step_speed)
+        self.alive_cell_color_setting.settingValueChanged.connect(self.update_cell_colors)
+        self.dead_cell_color_setting.settingValueChanged.connect(self.update_cell_colors)
+        self.cell_border_color_setting.settingValueChanged.connect(self.update_cell_colors)
 
         self.step_simulation_btn.clicked.connect(self.update_field)
         self.loop_simulation_btn.clicked.connect(self.loop_simulation)
@@ -117,9 +129,13 @@ class GameOfLife(QMainWindow, UIForm):
         return self.field.matrix[cell_pos_y][cell_pos_x]
 
     def change_simulation_step_speed(self):
-        v = self.simulation_step_speed_setting_value_slider.value()
-        self.simulation_step_speed_setting_value_label.setText(str(v / 1000))
+        v = self.simulation_update_delay_setting.value()
         self.simulation_timer.setInterval(v)
+
+    def update_cell_colors(self):
+        self.alive_cell_color = self.alive_cell_color_setting.value()
+        self.dead_cell_color = self.dead_cell_color_setting.value()
+        self.cell_border_color = self.cell_border_color_setting.value()
 
     @QtCore.pyqtSlot()
     def update_field(self):

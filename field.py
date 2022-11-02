@@ -28,7 +28,6 @@ class Field:
         self.__size = self.__size_x, self.__size_y = size_x, size_y
         self.matrix = [[self.Cell(x, y) for x in range(size_x)] for y in range(size_y)]
         self.buffer = ...
-        self.alive_nearby_map = [[self.alive_nearby(cell) for cell in row] for row in self.matrix]
 
     def get_size(self): return self.__size
     def get_size_x(self): return self.__size_x
@@ -63,34 +62,14 @@ class Field:
                 self.buffer[y][x].set_state(state)
 
         self.matrix = self.buffer[:]
-        self.alive_nearby_map = [[self.alive_nearby(cell) for cell in row] for row in self.matrix]
 
-
-if __name__ == '__main__':
-    def print_field(field_d: Field):
-        for y, row in enumerate(field_d.matrix):
+    def get_alives(self):
+        alives = []
+        for y, row in enumerate(self.matrix):
+            if all(c.get_state == self.Cell.DEAD for c in row):
+                continue
             for x, cell in enumerate(row):
-                print('■' if cell.get_state() == Field.Cell.ALIVE else '□', end='')
-            print()
+                if cell.get_state() == self.Cell.ALIVE:
+                    alives.append((x, y))
 
-
-    def clear_console():
-        os.system('cls' if os.name == 'nt' else 'clear')
-
-
-    def mainloop(field_d: Field, n: int, timeout: float = 1.0):
-        for i in range(n):
-            clear_console()
-            print_field(field_d)
-            print(i + 1)
-            time.sleep(timeout)
-            field_d.step()
-
-    field = Field(25, 25)
-
-    living_cells = (1, 1), (2, 2), (3, 0), (3, 1), (3, 2)
-    for r, c in living_cells:
-        field.matrix[c][r].set_state(Field.Cell.ALIVE)
-
-    mainloop(field, 200, 0.05)
-    input('end.')
+        return alives
