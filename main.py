@@ -10,9 +10,9 @@ from file_handlers.settings_file_handler import SettingsFileHandler
 
 
 class GameOfLife(QMainWindow, UIForm):
-    FACTOR = 1.5
+    FACTOR = 1.2
     SIMULATION_WINDOW_SIZE = 600, 600
-    SETTINGS_FILE = 'settings_file.txt'
+    SETTINGS_FILE = 'settings.txt'
 
     def __init__(self):
         super().__init__()
@@ -73,7 +73,7 @@ class GameOfLife(QMainWindow, UIForm):
             self.sfh.read_settings()
 
         if not self.sfh.has_setting('simulation_update_delay'):
-            self.sfh.set_setting('simulation_update_delay', '50')
+            self.sfh.set_setting('simulation_update_delay', 50)
 
         if not self.sfh.has_setting('alive_cell_color'):
             self.sfh.set_setting('alive_cell_color', '#ffffff')
@@ -104,7 +104,7 @@ class GameOfLife(QMainWindow, UIForm):
     def setup_simulation(self):
         self.simulation_active = False
 
-        self.field = Field(60, 60)
+        self.field = Field(100, 100)
         self.field_size_x, self.field_size_y = self.field.get_size()
 
     def reload_simulation(self):
@@ -116,31 +116,34 @@ class GameOfLife(QMainWindow, UIForm):
         self._painter.update()
 
     def mousePressEvent(self, event):
-        if event.buttons() & QtCore.Qt.LeftButton and\
-                self._view.underMouse() and not self.simulation_active:
+        if (event.buttons() & QtCore.Qt.LeftButton and
+                self._view.underMouse() and
+                not self.simulation_active):
             self.drag_start = event.pos()
 
             cell = self.get_hovered_cell()
-            if cell.get_state() == Field.Cell.DEAD:
-                self.dragging_to_cell_state = Field.Cell.ALIVE
-            else:
-                self.dragging_to_cell_state = Field.Cell.DEAD
-            cell.set_state(self.dragging_to_cell_state)
-            self._painter.update()
+            if cell is not None:
+                if cell.get_state() == Field.Cell.DEAD:
+                    self.dragging_to_cell_state = Field.Cell.ALIVE
+                else:
+                    self.dragging_to_cell_state = Field.Cell.DEAD
+                cell.set_state(self.dragging_to_cell_state)
+                self._painter.update()
 
     def mouseReleaseEvent(self, event):
-        if self._view.underMouse() and not self.simulation_active:
-            self.drag_start = None
-            self.dragging_to_cell_state = None
+        self.drag_start = None
+        self.dragging_to_cell_state = None
 
     def mouseMoveEvent(self, event):
         if (self.drag_start is not None and
+                self.dragging_to_cell_state is not None and
                 event.buttons() & QtCore.Qt.LeftButton and
                 self._view.underMouse() and
                 event.pos() != self.drag_start):
             cell = self.get_hovered_cell()
-            if cell.get_state() != self.dragging_to_cell_state:
-                cell.set_state(self.dragging_to_cell_state)
+            if cell is not None:
+                if cell.get_state() != self.dragging_to_cell_state:
+                    cell.set_state(self.dragging_to_cell_state)
             self._painter.update()
 
     def loop_simulation(self):
@@ -158,6 +161,9 @@ class GameOfLife(QMainWindow, UIForm):
 
         cell_pos_x, cell_pos_y = int(cursor_point.x() / self.field_cell_size), \
                                  int(cursor_point.y() / self.field_cell_size)
+        if (cell_pos_x < 0 or cell_pos_x > self.field_size_x - 1 or
+                cell_pos_y < 0 or cell_pos_y > self.field_size_y - 1):
+            return
 
         return self.field.matrix[cell_pos_y][cell_pos_x]
 
@@ -190,7 +196,7 @@ class GameOfLife(QMainWindow, UIForm):
         scale_tr = QtGui.QTransform().scale(self.FACTOR, self.FACTOR)
 
         tr = self._view.transform() * scale_tr
-        if tr.m11() < 5:
+        if tr.m11() < 3:
             self._view.setTransform(tr)
             w, h = self._view.width(), self._view.height()
             self.field_cell_size = min(w * tr.m11() // self.field_size_x, h * tr.m11() // self.field_size_y)
