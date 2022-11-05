@@ -17,7 +17,7 @@ class UIForm(object):
         self.reset_simulation_btn = ...
 
     def setup_ui(self, form):
-        form.setWindowTitle('Жизнь')
+        form.setWindowTitle('Game of Life')
         form.setWindowIcon(QtGui.QIcon(':/resources/icon.ico'))
 
         main_widget = QtWidgets.QWidget(form)
