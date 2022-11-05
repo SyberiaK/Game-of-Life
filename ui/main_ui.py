@@ -4,6 +4,9 @@ from ui.cell_painter import CellPainter
 from ui.simulation_view import SimulationView
 from ui.settings_widgets import SliderSettingWidget, ColorSettingWidget
 
+# Импорт иконки приложения
+from resources import resources
+
 
 class UIForm(object):
     def __init__(self):
@@ -15,6 +18,7 @@ class UIForm(object):
 
     def setup_ui(self, form):
         form.setWindowTitle('Жизнь')
+        form.setWindowIcon(QtGui.QIcon(':/resources/icon.ico'))
 
         main_widget = QtWidgets.QWidget(form)
         main_widget.setLayout(QtWidgets.QHBoxLayout())

@@ -29,7 +29,6 @@ class SettingsFileHandler:
                 val = util_funcs.str_to_bool(val)
 
             self.settings[var] = val
-        print(self.settings)
 
     def get_setting(self, var: str) -> Any:
         if self.settings.get(var, None) is None:
