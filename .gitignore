@@ -1,4 +1,8 @@
 \.idea
 \venv
+\build
+\dist
 \ignore_that
-settings_file.txt
+settings.txt
+Game of Life.spec
+resources.qrc
