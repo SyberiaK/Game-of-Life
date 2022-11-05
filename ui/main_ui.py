@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from cell_painter import CellPainter
-from simulation_view import SimulationView
+from ui.cell_painter import CellPainter
+from ui.simulation_view import SimulationView
 from ui.settings_widgets import SliderSettingWidget, ColorSettingWidget
 
 
@@ -15,7 +15,6 @@ class UIForm(object):
 
     def setup_ui(self, form):
         form.setWindowTitle('Жизнь')
-        # self.setFixedSize(620, 680)
 
         main_widget = QtWidgets.QWidget(form)
         main_widget.setLayout(QtWidgets.QHBoxLayout())
@@ -30,9 +29,9 @@ class UIForm(object):
         self.simulation_update_delay_setting = SliderSettingWidget(settings_group,
                                                                    setting_name='Simulation update delay')
         self.simulation_update_delay_setting.setRange(10, 500)
-        self.simulation_update_delay_setting.setPageStep(50)
-        self.simulation_update_delay_setting.setSingleStep(50)
-        self.simulation_update_delay_setting.setValue(50)
+        self.simulation_update_delay_setting.setPageStep(10)
+        self.simulation_update_delay_setting.setSingleStep(10)
+        self.simulation_update_delay_setting.setValue(self.sfh.get_setting('simulation_update_delay'))
         self.simulation_update_delay_setting.setSettingValueDisplayMultiplier(.001)
         self.simulation_update_delay_setting.setSliderOrientation(QtCore.Qt.Horizontal)
         self.simulation_update_delay_setting.setSliderInvertedAppearance(True)

@@ -1,8 +1,8 @@
 from PyQt5.QtCore import QRect, QLineF
-from PyQt5.QtGui import QColor, QPainter, QBrush, QPen
+from PyQt5.QtGui import QPainter, QBrush, QPen
 from PyQt5.QtWidgets import QWidget
 
-from field import Field
+from field.field import Field
 Cell = Field.Cell
 
 

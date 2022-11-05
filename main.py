@@ -1,15 +1,18 @@
+import os
 import sys
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
-from field import Field
+from field.field import Field
 from ui.main_ui import UIForm
+from file_handlers.settings_file_handler import SettingsFileHandler
 
 
 class GameOfLife(QMainWindow, UIForm):
     FACTOR = 1.5
     SIMULATION_WINDOW_SIZE = 600, 600
+    SETTINGS_FILE = 'settings_file.txt'
 
     def __init__(self):
         super().__init__()
@@ -17,6 +20,8 @@ class GameOfLife(QMainWindow, UIForm):
         # Поле
         self.field = ...
         self.field_size_x, self.field_size_y = ..., ...
+
+        self.sfh = ...
 
         # Переменные для рисования и работы симуляции
         self.simulation_active = ...
@@ -35,8 +40,16 @@ class GameOfLife(QMainWindow, UIForm):
         self.cell_border_color = ...
 
         self.setup_simulation()
+        self.setup_settings()
         self.setup_ui(self)
         self.setup_ui_logic()
+
+        self.alive_cell_color_setting.current_color = QtGui.QColor(self.sfh.get_setting('alive_cell_color'))
+        self.dead_cell_color_setting.current_color = QtGui.QColor(self.sfh.get_setting('dead_cell_color'))
+        self.cell_border_color_setting.current_color = QtGui.QColor(self.sfh.get_setting('cell_border_color'))
+        self.alive_cell_color_setting.updatePanelColor()
+        self.dead_cell_color_setting.updatePanelColor()
+        self.cell_border_color_setting.updatePanelColor()
 
         self.alive_cell_color = self.alive_cell_color_setting.value()
         self.dead_cell_color = self.dead_cell_color_setting.value()
@@ -46,12 +59,35 @@ class GameOfLife(QMainWindow, UIForm):
         self.field_cell_size = min(w // self.field_size_x, h // self.field_size_y)
 
         self.simulation_timer = QtCore.QTimer(self)
-        self.simulation_timer.setInterval(100)
+        self.simulation_timer.setInterval(self.sfh.get_setting('simulation_update_delay'))
         self.simulation_timer.timeout.connect(self.update_field)
 
-    # noinspection PyUnresolvedReferences
+    def setup_settings(self):
+        first_launch = False
+        if not os.path.isfile(self.SETTINGS_FILE):
+            first_launch = True
+
+        self.sfh = SettingsFileHandler(self.SETTINGS_FILE)
+
+        if not first_launch:
+            self.sfh.read_settings()
+
+        if not self.sfh.has_setting('simulation_update_delay'):
+            self.sfh.set_setting('simulation_update_delay', '50')
+
+        if not self.sfh.has_setting('alive_cell_color'):
+            self.sfh.set_setting('alive_cell_color', '#ffffff')
+
+        if not self.sfh.has_setting('dead_cell_color'):
+            self.sfh.set_setting('dead_cell_color', '#000000')
+
+        if not self.sfh.has_setting('cell_border_color'):
+            self.sfh.set_setting('cell_border_color', '#323232')
+
+        self.sfh.write_settings()
+
     def setup_ui_logic(self):
-        self.simulation_update_delay_setting.settingValueChanged.connect(self.change_simulation_step_speed)
+        self.simulation_update_delay_setting.settingValueChanged.connect(self.change_simulation_update_delay)
         self.alive_cell_color_setting.settingValueChanged.connect(self.update_cell_colors)
         self.dead_cell_color_setting.settingValueChanged.connect(self.update_cell_colors)
         self.cell_border_color_setting.settingValueChanged.connect(self.update_cell_colors)
@@ -80,9 +116,6 @@ class GameOfLife(QMainWindow, UIForm):
         self._painter.update()
 
     def mousePressEvent(self, event):
-        # cursor_point = self.mapFromGlobal(self.cursor().pos())
-        # cursor_pos = cursor_point.x(), cursor_point.y()
-
         if event.buttons() & QtCore.Qt.LeftButton and\
                 self._view.underMouse() and not self.simulation_active:
             self.drag_start = event.pos()
@@ -128,14 +161,21 @@ class GameOfLife(QMainWindow, UIForm):
 
         return self.field.matrix[cell_pos_y][cell_pos_x]
 
-    def change_simulation_step_speed(self):
+    def change_simulation_update_delay(self):
         v = self.simulation_update_delay_setting.value()
         self.simulation_timer.setInterval(v)
+        self.sfh.set_setting('simulation_update_delay', v)
+        self.sfh.write_settings()
 
     def update_cell_colors(self):
         self.alive_cell_color = self.alive_cell_color_setting.value()
         self.dead_cell_color = self.dead_cell_color_setting.value()
         self.cell_border_color = self.cell_border_color_setting.value()
+
+        self.sfh.set_setting('alive_cell_color', self.alive_cell_color.name())
+        self.sfh.set_setting('dead_cell_color', self.dead_cell_color.name())
+        self.sfh.set_setting('cell_border_color', self.cell_border_color.name())
+        self.sfh.write_settings()
 
     @QtCore.pyqtSlot()
     def update_field(self):
