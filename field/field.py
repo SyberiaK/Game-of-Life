@@ -1,7 +1,7 @@
-import os
-import time
+from typing import Tuple, List
 
 
+# Класс поля. Весь алгоритм симуляции просчитывается в нём
 class Field:
     class Cell:
         DEAD = 0
@@ -13,13 +13,13 @@ class Field:
             self.__pos = self.__pos_x, self.__pos_y = pos_x, pos_y
             self.__state = state
 
-        def get_pos(self): return self.__pos
-        def get_pos_x(self): return self.__pos_x
-        def get_pos_y(self): return self.__pos_y
+        def get_pos(self) -> Tuple[int, int]: return self.__pos
+        def get_pos_x(self) -> int: return self.__pos_x
+        def get_pos_y(self) -> int: return self.__pos_y
 
-        def get_state(self): return self.__state
+        def get_state(self) -> int: return self.__state
 
-        def set_state(self, state: int):
+        def set_state(self, state: int) -> None:
             if state not in (self.DEAD, self.ALIVE):
                 raise ValueError('Cell can only be DEAD (0) or ALIVE (1)')
             self.__state = state
@@ -29,11 +29,11 @@ class Field:
         self.matrix = [[self.Cell(x, y) for x in range(size_x)] for y in range(size_y)]
         self.buffer = ...
 
-    def get_size(self): return self.__size
-    def get_size_x(self): return self.__size_x
-    def get_size_y(self): return self.__size_y
+    def get_size(self) -> Tuple[int, int]: return self.__size
+    def get_size_x(self) -> int: return self.__size_x
+    def get_size_y(self) -> int: return self.__size_y
 
-    def alive_nearby(self, cell: Cell):
+    def alive_nearby(self, cell: Cell) -> int:
         x, y = cell.get_pos()
         max_x, max_y = self.get_size()
 
@@ -45,7 +45,7 @@ class Field:
                     an += 1
         return an
 
-    def check_cell(self, cell: Cell):
+    def check_cell(self, cell: Cell) -> int:
         state = cell.get_state()
         an = self.alive_nearby(cell)
 
@@ -53,7 +53,7 @@ class Field:
             return self.Cell.ALIVE
         return self.Cell.DEAD
 
-    def step(self):
+    def step(self) -> None:
         self.buffer = [[self.Cell(x, y) for x in range(self.__size_x)] for y in range(self.__size_y)]
 
         for y, row in enumerate(self.matrix):
@@ -63,7 +63,7 @@ class Field:
 
         self.matrix = self.buffer[:]
 
-    def get_alives(self):
+    def get_alives(self) -> List[Tuple[int, int]]:
         alives = []
         for y, row in enumerate(self.matrix):
             if all(c.get_state == self.Cell.DEAD for c in row):

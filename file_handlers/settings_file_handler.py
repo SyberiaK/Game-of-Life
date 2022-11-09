@@ -3,6 +3,7 @@ from typing import Any
 from util import util_funcs
 
 
+# Читает/записывает настройки в файл, хранит в себе словарь настроек и их значений
 class SettingsFileHandler:
     def __init__(self, file: str) -> None:
         self.file = file

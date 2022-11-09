@@ -6,6 +6,7 @@ from field.field import Field
 Cell = Field.Cell
 
 
+# Рисует поле.
 class CellPainter(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -15,7 +16,8 @@ class CellPainter(QWidget):
     def paintEvent(self, event):
         p = self.parent
         alives = p.field.get_alives()
-        sz = p.field_cell_size
+        w, h = self.width(), self.height()
+        sz = min(w // p.field_size_x, h // p.field_size_y)
 
         qp = QPainter(self)
 

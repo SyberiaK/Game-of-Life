@@ -1,3 +1,5 @@
+# Различные мелкие функции (для SettingsFileHandler)
+
 def starts_and_endswith(main_str, check_str):
     return main_str.startswith(check_str) and main_str.endswith(check_str)
 
@@ -32,4 +34,4 @@ def str_to_bool(elem: str) -> bool:
     elif elem.lower() in ['n', 'no', 'f', 'false', 'off', '0']:
         return False
     else:
-        raise ValueError(f'invalid string for boolean conversion: {elem}')
+        raise ValueError('invalid string for boolean conversion: %s' % elem)
