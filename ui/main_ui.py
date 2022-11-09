@@ -10,15 +10,21 @@ from resources import resources
 
 class UIForm(object):
     def __init__(self):
-        self._view = ...
-        self._painter = ...
-        self.loop_simulation_btn = ...
-        self.step_simulation_btn = ...
-        self.reset_simulation_btn = ...
+        self._view: SimulationView = ...
+        self._painter: CellPainter = ...
+        self.loop_simulation_btn: QtWidgets.QPushButton = ...
+        self.step_simulation_btn: QtWidgets.QPushButton = ...
+        self.reset_simulation_btn: QtWidgets.QPushButton = ...
 
     def setup_ui(self, form):
         form.setWindowTitle('Game of Life')
         form.setWindowIcon(QtGui.QIcon(':/resources/icon.ico'))
+
+        self.menubar = QtWidgets.QMenuBar(form)
+        filemenu = QtWidgets.QMenu('File', self.menubar)
+        filemenu.addAction('Open', form.open_save_file)
+        filemenu.addAction('Save', form.create_save_file)
+        self.menubar.addMenu(filemenu)
 
         main_widget = QtWidgets.QWidget(form)
         main_widget.setLayout(QtWidgets.QHBoxLayout())
@@ -35,7 +41,7 @@ class UIForm(object):
         self.simulation_update_delay_setting.setRange(10, 500)
         self.simulation_update_delay_setting.setPageStep(10)
         self.simulation_update_delay_setting.setSingleStep(10)
-        self.simulation_update_delay_setting.setValue(self.sfh.get_setting('simulation_update_delay'))
+        self.simulation_update_delay_setting.setValue(self.settingsfh.get_setting('simulation_update_delay'))
         self.simulation_update_delay_setting.setSettingValueDisplayMultiplier(.001)
         self.simulation_update_delay_setting.setSliderOrientation(QtCore.Qt.Horizontal)
         self.simulation_update_delay_setting.setSliderInvertedAppearance(True)
@@ -49,14 +55,14 @@ class UIForm(object):
                                                           default_color=QtGui.QColor(0, 0, 0, 255))
         self.dead_cell_color_setting.construct()
 
-        self.cell_border_color_setting = ColorSettingWidget(settings_group, setting_name='Cells border color',
+        self.field_grid_color_setting = ColorSettingWidget(settings_group, setting_name='Field grid color',
                                                             default_color=QtGui.QColor(50, 50, 50, 255))
-        self.cell_border_color_setting.construct()
+        self.field_grid_color_setting.construct()
 
         settings_group.layout().addWidget(self.simulation_update_delay_setting)
         settings_group.layout().addWidget(self.alive_cell_color_setting)
         settings_group.layout().addWidget(self.dead_cell_color_setting)
-        settings_group.layout().addWidget(self.cell_border_color_setting)
+        settings_group.layout().addWidget(self.field_grid_color_setting)
 
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         settings_group.layout().addItem(spacer_item)
@@ -105,3 +111,4 @@ class UIForm(object):
         main_widget.layout().addWidget(simulation_widget)
 
         form.setCentralWidget(main_widget)
+        form.setMenuBar(self.menubar)
