@@ -242,7 +242,6 @@ class GameOfLife(QMainWindow, UIForm):
             self._view.setTransform(tr)
             w, h = self._view.width(), self._view.height()
             self.field_cell_size = int(min(w * tr.m11() / self.field_size_x, h * tr.m11() / self.field_size_y))
-            print(self.field_cell_size)
 
     @QtCore.pyqtSlot()
     def simulation_zoom_out(self):
@@ -257,7 +256,6 @@ class GameOfLife(QMainWindow, UIForm):
                 self._view.setTransform(tr)
                 w, h = self._view.width(), self._view.height()
                 self.field_cell_size = int(min(w * tr.m11() / self.field_size_x, h * tr.m11() / self.field_size_y))
-                print(self.field_cell_size)
 
     @QtCore.pyqtSlot()
     def create_save_file(self):
