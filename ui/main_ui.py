@@ -112,3 +112,4 @@ class UIForm(object):
 
         form.setCentralWidget(main_widget)
         form.setMenuBar(self.menubar)
+        form.setFixedSize(810, 725)
